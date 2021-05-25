@@ -1,0 +1,7 @@
+deployment:
+  podAnnotations:
+    dapr.io/enabled: "true"
+    dapr.io/app-id: "traefik-ingress"
+    dapr.io/app-protocol: "http"
+    dapr.io/app-port: "8000"
+    dapr.io/log-as-json: "true"
