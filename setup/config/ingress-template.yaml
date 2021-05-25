@@ -1,0 +1,22 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ingress
+
+spec:
+  entryPoints:
+  - websecure
+
+  routes:
+  - match: Host(`DOMAINNAME`) && PathPrefix(`/v1`)
+    kind: Rule
+    services:
+    - name: traefik-ingress-dapr
+      port: 80
+
+  tls:
+    secretName: tls-secret
+    domains:
+    - main: DOMAINNAME
+      sans:
+      - '*.DOMAINNAME'

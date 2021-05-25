@@ -1,0 +1,7 @@
+# certs
+*.pem
+certs
+
+# template output
+config/ingress.yaml
+config/namespace.yaml
