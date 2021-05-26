@@ -4,4 +4,6 @@ deployment:
     dapr.io/app-id: "traefik-ingress"
     dapr.io/app-protocol: "http"
     dapr.io/app-port: "8000"
+    dapr.io/api-token-secret: "dapr-api-token"
+    dapr.io/config: "ingress-config"
     dapr.io/log-as-json: "true"

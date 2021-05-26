@@ -17,7 +17,8 @@ The following parameters can be used to configure your deployment. Define these 
 ```shell
 DOMAIN            # default: example.com
 DAPR_HA           # default: true
-DAPR_LOG_AS_JSON  #: true
+DAPR_LOG_AS_JSON  # default: true
+INGRESS_NAMESPACE # default: traefik
 ```
 > Note: This requires an existing k8s cluster with the current context (`kubectl config current-context`) set to the desired k8s cluster. List all registered contexts using `kubectl config get-contexts` and set the desired context using `kubectl config use-context <context>` if needed.
 
