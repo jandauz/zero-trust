@@ -32,3 +32,6 @@ To configure external access:
 - `make certs` to create TLS certs
 - `make ingress` to configure Traefik ingress (read [here](https://github.com/jandauz/zero-trust/tree/main/setup/docs/traefik.md) for more information)
 - `make test` to test deployment
+
+[Optional] To deploy in-cluster data services:
+- `make redis` to install Redis into the cluster

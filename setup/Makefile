@@ -100,6 +100,17 @@ token: ## Print Dapr API token
 	@echo " ${API_TOKEN}"
 	@echo
 
+.PHONY: redis
+redis: ## Install Redis into the cluster
+	# Add and update helm repo ...
+	helm repo add bitnami https://charts.bitnami.com/bitnami
+	helm repo update
+	kubectl create ns redis
+	# Installing redis ...
+	helm install redis bitnami/redis -n redis
+	kubectl rollout status statefulset.apps/redis-master -n redis
+	kubectl rollout status statefulset.apps/redis-replicas -n redis
+
 .PHONY: help
 help: ## Display available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk \
