@@ -1,6 +1,6 @@
 # ingest
 
-ingest receives a `schedule-delivery-request`, generates a UUID, and queues it for processing. This demonstrates:
+ingest receives a `delivery-request`, generates a UUID, and queues it for processing. This demonstrates:
 - Publishing using Dapr [pub/sub building block](https://docs.dapr.io/developing-applications/building-blocks/pubsub/pubsub-overview/)
 - Service invocation access control
 - Component scoping
