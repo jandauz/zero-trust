@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingest
+  namespace: zero-trust
+  labels:
+    app: ingest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingest
+  template:
+    metadata:
+      labels:
+        app: ingest
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "ingest"
+        dapr.io/app-protocol: "http"
+        dapr.io/app-port: "8080"
+        dapr.io/config: "ingest-config"
+        dapr.io/log-as-json: "true"
+        dapr.io/log-level: "debug"
+    spec:
+      containers:
+      - name: ingest
+        image: k3d-zero-trust-registry:5000/ingest:v0.1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+---
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: ingest-config
+  namespace: zero-trust
+spec:
+  secrets:
+    scopes:
+    - storeName: kubernetes
+      defaultAccess: deny
+  accessControl:
+    defaultAction: deny
+    trustDomain: "zero-trust"
+    policies:
+    - appId: traefik-ingress
+      defaultAction: deny
+      trustDomain: "public"
+      namespace: "traefik"
+      operations:
+      - name: /delivery-requests
+        httpVerb: ["POST"]
+        action: allow

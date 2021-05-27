@@ -1,0 +1,10 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: ingress-config
+spec:
+  secrets:
+    scopes:
+    - storeName: kubernetes
+      defaultAccess: deny
+      allowedSecrets: ["dapr-api-token"]

@@ -17,7 +17,8 @@ The following parameters can be used to configure your deployment. Define these 
 ```shell
 DOMAIN            # default: example.com
 DAPR_HA           # default: true
-DAPR_LOG_AS_JSON  #: true
+DAPR_LOG_AS_JSON  # default: true
+INGRESS_NAMESPACE # default: traefik
 ```
 > Note: This requires an existing k8s cluster with the current context (`kubectl config current-context`) set to the desired k8s cluster. List all registered contexts using `kubectl config get-contexts` and set the desired context using `kubectl config use-context <context>` if needed.
 
@@ -31,3 +32,9 @@ To configure external access:
 - `make certs` to create TLS certs
 - `make ingress` to configure Traefik ingress (read [here](https://github.com/jandauz/zero-trust/tree/main/setup/docs/traefik.md) for more information)
 - `make test` to test deployment
+
+[Optional] To deploy in-cluster data services:
+- `make redis` to install Redis into the cluster
+
+Then for each namespace you want to deploy Dapr apps to:
+- `make namespace NSNAME=<NSNAME>` where `<NSNAME>` is the namespace to create and configure secrets
