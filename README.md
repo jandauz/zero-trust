@@ -8,6 +8,6 @@ The business case loosely follow's Microsoft's [Fabrikam Drone Delivery](https:/
 
 ## Deploy
 
-The following are steps to deploy this project.
+The following are steps to deploy this project:
 - Use an existing k8s cluster or [create a new one](https://github.com/jandauz/zero-trust/tree/main/setup/k3d)
 - [Setup the cluster](https://github.com/jandauz/zero-trust/tree/main/setup) 

@@ -100,6 +100,11 @@ token: ## Print Dapr API token
 	@echo " ${API_TOKEN}"
 	@echo
 
+.PHONY: reload
+reload: ## Reloads API to pick up new components
+	kubectl rollout restart deployment/traefik -n traefik
+	kubectl rollout status deployment/traefik -n traefik
+
 .PHONY: redis
 redis: ## Install Redis into the cluster
 	# Add and update helm repo ...
@@ -110,6 +115,14 @@ redis: ## Install Redis into the cluster
 	helm install redis bitnami/redis -n redis
 	kubectl rollout status statefulset.apps/redis-master -n redis
 	kubectl rollout status statefulset.apps/redis-replicas -n redis
+
+.PHONY: namespace
+namespace: ## Configure namespace (make namespace NSNAME=default)
+	# Creating zero-trust namespace
+	sed "s/NSNAME/${NSNAME}/g" config/namespace-template.yaml > config/namespace.yaml
+	kubectl apply -f config/namespace.yaml
+	$(eval REDIS_PASSWORD=$(shell kubectl get secret redis -n redis -o jsonpath="{.data.redis-password}" | base64 --decode))
+	kubectl create secret generic redis --from-literal=redis-password="$(REDIS_PASSWORD)" -n ${NSNAME}
 
 .PHONY: help
 help: ## Display available commands

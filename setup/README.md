@@ -35,3 +35,6 @@ To configure external access:
 
 [Optional] To deploy in-cluster data services:
 - `make redis` to install Redis into the cluster
+
+Then for each namespace you want to deploy Dapr apps to:
+- `make namespace NSNAME=<NSNAME>` where `<NSNAME>` is the namespace to create and configure secrets
