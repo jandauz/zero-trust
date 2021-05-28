@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler
+  namespace: zero-trust
+  labels:
+    app: scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scheduler
+  template:
+    metadata:
+      labels:
+        app: scheduler
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "scheduler"
+        dapr.io/app-protocol: "http"
+        dapr.io/app-port: "8080"
+        dapr.io/config: "scheduler-config"
+        dapr.io/log-as-json: "true"
+        dapr.io/log-level: "debug"
+    spec:
+      containers:
+      - name: scheduler
+        image: k3d-zero-trust-registry:5000/scheduler:v0.1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+---
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: scheduler-config
+  namespace: zero-trust
+spec:
+  secrets:
+    scopes:
+    - storeName: kubernetes
+      defaultAccess: deny
+      allowedSecrets: ["azure-maps"]
+  accessControl:
+    defaultAction: deny
+    trustDomain: "zero-trust"
