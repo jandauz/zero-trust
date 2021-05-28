@@ -1,5 +1,5 @@
 DOMAIN				?=example.com
-DAPR_RUNTIME		?=1.1.2
+DAPR_RUNTIME		?=latest
 DAPR_HA				?=true
 DAPR_LOG_AS_JSON	?=true
 INGRESS_NAMESPACE	?=traefik
@@ -31,15 +31,11 @@ dapr: dapr-install ## Install Dapr
 
 .PHONY: dapr-install
 dapr-install: ## Install and configure Dapr
-	# Add and update helm repo ...
-	helm repo add dapr https://dapr.github.io/helm-charts
-	helm repo update
 	# Installing Dapr ...
-	kubectl create ns dapr-system
-	helm install dapr dapr/dapr -n dapr-system \
-		--version $(DAPR_RUNTIME) \
-		--set global.logAsJson=$(DAPR_LOG_AS_JSON) \
-		--set global.ha.enabled=$(DAPR_HA)
+	dapr init -k \
+		--runtime-version $(DAPR_RUNTIME) \
+		--log-as-json $(DAPR_LOG_AS_JSON) \
+		--enable-ha $(DAPR_HA)
 	# Waiting for everything to finish ...
 	kubectl rollout status deployment/dapr-operator -n dapr-system
 	kubectl rollout status deployment/dapr-dashboard -n dapr-system

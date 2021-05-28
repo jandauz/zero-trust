@@ -9,7 +9,8 @@ An exercise in creating a zero trust deployment of Dapr on Kubernetes, configure
   - [k3d](https://github.com/jandauz/zero-trust/tree/main/setup/k3d)
 - Tools:
   - [kubectl](https://kubernetes.io/docs/tasks/tools/) to interact with the k8s cluster
-  - [Helm](https://helm.sh/docs/intro/install/) to install Dapr and dependencies
+  - [Dapr](https://docs.dapr.io/getting-started/install-dapr-cli/) to install Dapr
+  - [Helm](https://helm.sh/docs/intro/install/) to install Traefik
   - [mkcert](https://github.com/FiloSottile/mkcert#installation) to generate wildcard certificates
 
 ## Setup
