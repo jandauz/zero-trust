@@ -1,6 +1,6 @@
 # ingest
 
-ingest receives a `delivery-request`, generates a UUID, and queues it for processing. This demonstrates:
+ingest receives a `delivery-request`, generates a UUID, and publishes it to a `delivery-requests` topic for processing. This demonstrates:
 - Publishing using Dapr [pub/sub building block](https://docs.dapr.io/developing-applications/building-blocks/pubsub/pubsub-overview/)
 - Service invocation access control
 - Component scoping
@@ -109,18 +109,3 @@ spec:
       defaultAccess: deny       # allow or deny access
 ```
 With the above configuration, the `ingest` service is denied access to the kubernetes secret store.
-
-With the following configuration, the `ingest` service would only be granted access to the `redis-password` secret.
-```yaml
-apiVersion: dapr.io/v1alpha1
-kind: Configuration
-metadata:
-  name: ingest-config
-  namespace: zero-trust
-spec:
-  secrets:                      # secrets to scope
-    scopes:                     # scope configurations
-    - storeName: kubernetes     # name of the secret store
-      defaultAccess: deny       # allow or deny access
-      allowedSecrets: ["redis-password"]
-```

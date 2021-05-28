@@ -38,6 +38,15 @@ cluster-stop: ## Stop k3d cluster
 cluster-down: ## Delete k3d cluster
 		k3d cluster delete $(CLUSTER_NAME)
 
+.PHONY: registry
+registry: ## Prints the k3d registry
+	$(eval K3D_REGISTRY_PORT=$(shell docker inspect -f='{{(index (index .NetworkSettings.Ports "5000/tcp") 0).HostPort}}' $(shell docker ps -aqf "name=k3d-zero-trust-registry")))
+	@echo
+	@echo k3d-registry is:
+	@echo
+	@echo " localhost:${K3D_REGISTRY_PORT}"
+	@echo
+
 .PHONY: help
 help: ## Display available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk \
