@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "setup"
+		},
+		{
+			"path": "ingest"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "scheduler"
+		}
+	],
+	"settings": {}
+}
