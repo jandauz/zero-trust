@@ -20,7 +20,10 @@ spec:
       key: redis-password
   - name: publishingScopes
     value: "ingest=delivery-requests"
+  - name: subscriptionScopes
+    value: "scheduler=delivery-requests"
 scopes:
 - ingest
+- scheduler
 auth:
   secretStore: kubernetes

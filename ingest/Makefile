@@ -26,10 +26,10 @@ image: tidy ## Builds and publishes docker image
 
 .PHONY: deploy
 deploy: ## Deploys prebuilt image to k8s using currently selected context
-	kubectl apply -f deploy/pubsub/redis.yaml
-	kubectl apply -f deploy/ingest.yaml
-	kubectl rollout restart deploy $(SERVICE_NAME)
-	kubectl rollout status deploy $(SERVICE_NAME)
+	kubectl apply -f ../deploy/pubsub/redis.yaml
+	kubectl apply -f ../deploy/$(SERVICE_NAME).yaml
+	kubectl rollout restart deploy $(SERVICE_NAME) -n zero-trust
+	kubectl rollout status deploy $(SERVICE_NAME) -n zero-trust
 
 .PHONY: help
 help: ## Display available commands
