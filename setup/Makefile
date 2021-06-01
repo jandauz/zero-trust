@@ -112,6 +112,22 @@ redis: ## Install Redis into the cluster
 	kubectl rollout status statefulset.apps/redis-master -n redis
 	kubectl rollout status statefulset.apps/redis-replicas -n redis
 
+.PHONY: mongo
+mongo: ## Install MongoDB into the cluster
+	# Add and update helm repo ...
+	helm repo add bitnami https://charts.bitnami.com/bitnami
+	helm repo update
+	kubectl create ns mongo
+	# Installing mongo ...
+	helm install mongo bitnami/mongodb \
+		--set architecture=replicaset \
+		--set auth.username=dapr \
+		--set auth.database=dapr \
+		--set replicaCount=3 \
+		-n mongo
+	kubectl rollout status statefulset.apps/mongo-mongodb -n mongo
+	kubectl rollout status statefulset.apps/mongo-mongodb-arbiter -n mongo
+
 .PHONY: namespace
 namespace: ## Configure namespace (make namespace NSNAME=default)
 	# Creating zero-trust namespace
@@ -119,7 +135,8 @@ namespace: ## Configure namespace (make namespace NSNAME=default)
 	kubectl apply -f config/namespace.yaml
 	$(eval REDIS_PASSWORD=$(shell kubectl get secret redis -n redis -o jsonpath="{.data.redis-password}" | base64 --decode))
 	kubectl create secret generic redis --from-literal=redis-password="$(REDIS_PASSWORD)" -n ${NSNAME}
-
+	export MONGODB_PASSWORD=$(shell kubectl get secret --namespace mongo mongo-mongodb -o jsonpath="{.data.mongodb-password}" | base64 --decode)
+	kubectl create secret generic mongo-mongodb --from-literal=mongodb-password="$(MONGODB_PASSWORD)" -n ${NSNAME}
 .PHONY: help
 help: ## Display available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk \
