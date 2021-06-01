@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: courier
+  namespace: zero-trust
+  labels:
+    app: courier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: courier
+  template:
+    metadata:
+      labels:
+        app: courier
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "courier"
+        dapr.io/app-protocol: "http"
+        dapr.io/app-port: "8080"
+        dapr.io/config: "courier-config"
+        dapr.io/log-as-json: "true"
+        dapr.io/log-level: "debug"
+    spec:
+      containers:
+      - name: courier
+        image: k3d-zero-trust-registry:5000/courier:v0.1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+---
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: courier-config
+  namespace: zero-trust
+spec:
+  accessControl:
+    defaultAction: deny
+    trustDomain: "zero-trust"
+    policies:
+      - appId: scheduler
+        defaultAction: deny
+        trustDomain: "zero-trust"
+        namespace: "zero-trust"
+        operations:
+        - name: /schedule-delivery
+          httpVerb: ["POST"]
+          action: allow
+      - appId: traefik-ingress
+        defaultAction: deny
+        trustDomain: "public"
+        namespace: "traefik"
+        operations:
+        - name: /find-courier
+          httpVerb: ["GET"]
+          action: allow
