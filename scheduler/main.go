@@ -8,27 +8,24 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/service/common"
 	daprd "github.com/dapr/go-sdk/service/http"
 	"github.com/ohler55/ojg/jp"
 	"github.com/ohler55/ojg/oj"
+	"github.com/rs/xid"
 )
 
 func main() {
-	logger := log.New(os.Stdout, "", 0)
+	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
 
-	s := daprd.NewService(":8080")
-	sub := &common.Subscription{
-		PubsubName: "pubsub",
-		Topic:      "delivery-requests",
-		Route:      "/delivery-requests",
-	}
 	c, err := dapr.NewClient()
 	if err != nil {
 		logger.Fatal(err)
 	}
+	defer c.Close()
 
 	secrets, err := c.GetSecret(context.Background(), "kubernetes", "azure-maps", nil)
 	if err != nil {
@@ -54,6 +51,14 @@ func main() {
 			"subscription-key": []string{key},
 		},
 		parser: oj.Parser{},
+		c:      c,
+	}
+
+	s := daprd.NewService(":8080")
+	sub := &common.Subscription{
+		PubsubName: "pubsub",
+		Topic:      "delivery-requests",
+		Route:      "/delivery-requests",
 	}
 	err = s.AddTopicEventHandler(sub, h.handle())
 	if err != nil {
@@ -70,6 +75,7 @@ type handler struct {
 	u      url.URL
 	p      url.Values
 	parser oj.Parser
+	c      dapr.Client
 }
 
 type topicEventHandlerFunc func(context.Context, *common.TopicEvent) (bool, error)
@@ -97,11 +103,27 @@ func (h handler) handle() topicEventHandlerFunc {
 			return true, nil
 		}
 
-		route, err := h.findRoute(from, to)
+		r, err := h.findRoute(from, to)
 		if err != nil {
 			return true, nil
 		}
-		h.logger.Printf("route: %+v", route)
+
+		id := xid.New().String()
+		d := delivery{
+			ID:   id,
+			From: from,
+			To:   to,
+			Route: route{
+				Distance:            r.LengthInMeters,
+				EstimatedTravelTime: r.TravelTimeInSeconds,
+			},
+		}
+
+		_, err = h.scheduleDelivery(ctx, d)
+		if err != nil {
+			return true, nil
+		}
+
 		return false, nil
 	}
 }
@@ -111,46 +133,6 @@ type deliveryRequest struct {
 	OwnerID string `json:"owner_id,omitempty"`
 	From    string `json:"from,omitempty"`
 	To      string `json:"to,omitempty"`
-}
-
-func (h *handler) findRoute(from, to geolocation) (route, error) {
-	h.logger.Printf("finding route between %v and %v", from, to)
-	h.p.Set("query", fmt.Sprintf("%s:%s", from.String(), to.String()))
-	h.u.Path = "route/directions/json"
-	h.u.RawQuery = h.p.Encode()
-	resp, err := http.Get(h.u.String())
-	if err != nil {
-		return route{}, err
-	}
-	defer resp.Body.Close()
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return route{}, err
-	}
-
-	data, err := h.parser.Parse(b)
-	if err != nil {
-		return route{}, err
-	}
-
-	x := jp.MustParseString("$.routes[0].summary")
-	result := x.Get(data)[0]
-
-	var r route
-	err = h.parser.Unmarshal([]byte(oj.JSON(result)), &r)
-	if err != nil {
-		return route{}, err
-	}
-
-	h.logger.Printf("distance: %v", r.Distance)
-	h.logger.Printf("estimated travel time: %v", r.EstimatedTravelTime)
-	return r, nil
-}
-
-type route struct {
-	Distance            int `json:"lengthInMeters,omitempty"`
-	EstimatedTravelTime int `json:"travelTimeInSeconds,omitempty"`
 }
 
 func (h *handler) findGeolocation(address string) (geolocation, error) {
@@ -194,4 +176,73 @@ type geolocation struct {
 
 func (g geolocation) String() string {
 	return fmt.Sprintf("%v,%v", g.Lat, g.Lon)
+}
+
+func (h *handler) findRoute(from, to geolocation) (azureRoute, error) {
+	h.logger.Printf("finding route between %v and %v", from, to)
+	h.p.Set("query", fmt.Sprintf("%s:%s", from.String(), to.String()))
+	h.u.Path = "route/directions/json"
+	h.u.RawQuery = h.p.Encode()
+	resp, err := http.Get(h.u.String())
+	if err != nil {
+		return azureRoute{}, err
+	}
+	defer resp.Body.Close()
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return azureRoute{}, err
+	}
+
+	data, err := h.parser.Parse(b)
+	if err != nil {
+		return azureRoute{}, err
+	}
+
+	x := jp.MustParseString("$.routes[0].summary")
+	result := x.Get(data)[0]
+
+	var r azureRoute
+	err = h.parser.Unmarshal([]byte(oj.JSON(result)), &r)
+	if err != nil {
+		return azureRoute{}, err
+	}
+
+	h.logger.Printf("distance: %v", r.LengthInMeters)
+	h.logger.Printf("estimated travel time: %v", r.TravelTimeInSeconds)
+	return r, nil
+}
+
+type azureRoute struct {
+	LengthInMeters      int           `json:"lengthInMeters,omitempty"`
+	TravelTimeInSeconds time.Duration `json:"travelTimeInSeconds,omitempty"`
+}
+
+type route struct {
+	Distance            int           `json:"distance,omitempty"`
+	EstimatedTravelTime time.Duration `json:"estimated_travel_time,omitempty"`
+}
+
+func (h *handler) scheduleDelivery(ctx context.Context, d delivery) (string, error) {
+	h.logger.Printf("scheduling delivery: %#v", d)
+	b, err := oj.Marshal(d)
+	if err != nil {
+		return "", err
+	}
+	b, err = h.c.InvokeMethodWithContent(ctx, "courier", "schedule-delivery", http.MethodPost, &dapr.DataContent{
+		ContentType: "application/json",
+		Data:        b,
+	})
+	if err != nil {
+		return "", err
+	}
+	h.logger.Printf("scheduled delivery with courier: %v", string(b))
+	return string(b), err
+}
+
+type delivery struct {
+	ID    string      `json:"id,omitempty"`
+	From  geolocation `json:"from,omitempty"`
+	To    geolocation `json:"to,omitempty"`
+	Route route       `json:"route,omitempty"`
 }

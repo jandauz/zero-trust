@@ -15,3 +15,4 @@ The following are steps to deploy this project:
 - [Setup the cluster](https://github.com/jandauz/zero-trust/tree/main/setup)
 - [Deploy ingest](https://github.com/jandauz/zero-trust/tree/main/ingest#deploy)
 - [Deploy scheduler](https://github.com/jandauz/zero-trust/tree/main/scheduler#deploy)
+- [Deploy courier](https://github.com/jandauz/zero-trust/tree/main/courier#deploy)

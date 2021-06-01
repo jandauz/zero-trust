@@ -1,0 +1,23 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: courier-store
+  namespace: zero-trust
+spec:
+  type: state.mongodb
+  version: v1
+  metadata:
+  - name: host
+    value: mongo-mongodb-headless.mongo.svc:27017
+  - name: username
+    value: dapr
+  - name: password
+    secretKeyRef:
+      name: mongo-mongodb
+      key: mongodb-password
+  - name: databaseName
+    value: dapr
+  - name: collectionName
+    value: courier
+scopes:
+- courier
