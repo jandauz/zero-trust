@@ -1,6 +1,6 @@
 # scheduler
 
-scheduler subscribes to a `delivery-requests` topic and sends a request to [Azure Maps](https://azure.microsoft.com/en-us/services/azure-maps/) to determine a route for the delivery.
+scheduler subscribes to a `delivery-requests` topic, sends a request to [Azure Maps](https://azure.microsoft.com/en-us/services/azure-maps/) to determine a route for the delivery, and schedules the delivery with a courier.
 This demonstrates:
 - Subscribing using Dapr [pub/sub building block](https://docs.dapr.io/developing-applications/building-blocks/pubsub/pubsub-overview/)
 - Component scoping
@@ -35,10 +35,10 @@ Kubernetes namespaces provides logical separation of applications but that does 
 $ https://localhost:3500/v1.0/invoke/service-b.namespace-b/method/execute
 ```
 
-> Note: The scheduler service does not implement the Service Invocation build block and therefore cannot be directly interacted with.
+> Note: The scheduler service does not implement the Service Invocation build block and therefore cannot be directly interacted with. However, it does call out to the `courier` service and must quality the service correctly e.g. https://localhost:3500/v1.0/invoke/courier.zero-trust/method/schedule-delivery.
 
 ### Component spec
-Another way to scope component access is to specify the `scopes` in the component manifest. The `redis` pub/sub building block as the following manifest:
+Another way to scope component access is to specify the `scopes` in the component manifest. The `redis` pub/sub building block has the following manifest:
 ```yaml
 apiVersion: dapr.io/v1alpha1
 kind: Component
@@ -73,7 +73,7 @@ Pub/sub building blocks have a feature called [topic scoping](https://docs.dapr.
 Refering back to the `redis` pub/sub building block, the component scopes subscription for the `scheduler` service to only the `delivery-requests` topic.
 
 ## Secret scoping
-Dapr provides the ability to [scope application access to secret stores](https://docs.dapr.io/operations/configuration/secret-scope/) as well as specific secrets. The `ingest` service has the secret store scope:
+Dapr provides the ability to [scope application access to secret stores](https://docs.dapr.io/operations/configuration/secret-scope/) as well as specific secrets. The `scheduler` service has the secret store scope:
 ```yaml
 apiVersion: dapr.io/v1alpha1
 kind: Configuration

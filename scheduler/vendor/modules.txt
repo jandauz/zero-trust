@@ -20,6 +20,9 @@ github.com/ohler55/ojg/jp
 github.com/ohler55/ojg/oj
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
+# github.com/rs/xid v1.3.0
+## explicit
+github.com/rs/xid
 # golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
