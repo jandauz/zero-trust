@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	logger := log.New(os.Stdout, "", 0)
+	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
 
 	s := http.NewService(":8080")
 
@@ -28,8 +28,8 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	log.Printf("listening on :8080")
-	log.Fatal(s.Start())
+	logger.Printf("listening on :8080")
+	logger.Fatal(s.Start())
 }
 
 func handler(c client.Client, logger *log.Logger) func(context.Context, *common.InvocationEvent) (*common.Content, error) {
