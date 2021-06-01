@@ -14,7 +14,7 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/ohler55/ojg v1.11.1-0.20210528123401-f1db2d62ba86
+# github.com/ohler55/ojg v1.11.1
 ## explicit
 github.com/ohler55/ojg
 github.com/ohler55/ojg/alt
