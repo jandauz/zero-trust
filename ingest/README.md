@@ -38,7 +38,7 @@ spec:
   accessControl:
     defaultAction: deny             # default action when no policies are matched
     trustDomain: "zero-trust"       # the assigned trust domain
-    policies:                       # species operations callers may perform
+    policies:                       # specifies operations callers may perform
     - appId: traefik-ingress        # Dapr AppID of the caller
       defaultAction: deny           # default action when no operations are matched
       trustDomain: "public"         # trust domain of the caller
@@ -60,7 +60,7 @@ $ https://localhost:3500/v1.0/invoke/service-b.namespace-b/method/execute
 ```
 
 ### Component spec
-Another way to scope component access is to specify the `scopes` in the component manifest. The `redis` pub/sub building block as the following manifest:
+Another way to scope component access is to specify the `scopes` in the component manifest. The `redis` pub/sub building block has the following manifest:
 ```yaml
 apiVersion: dapr.io/v1alpha1
 kind: Component
